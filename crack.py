@@ -9,27 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 import random
 
-def change_mark():
-    kids = Schoolkid.objects.all()
-    kid_ivan = kids.get(full_name__contains='Фролов Иван')
-    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan)
-    print(ivan_marks)
-    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan, points__in=[2, 3])
-    ivan_marks.filter().values_list("id")
-    for bad_marks in ivan_marks.filter().values_list("id"):
-        Mark.objects.filter(id=bad_marks[0]).update(points=5)
-    print("Плохие оценки исправлены")
-
-
-def remove_chastisements():
-    kids = Schoolkid.objects.all()
-    kid = kids.get(full_name__contains='Фролов Иван')
-    Chastisement.objects.filter(schoolkid=kid).delete()
-    print("Все замечания удалены")
-
-
-def create_commendation(name, lesson): #'Фролов Иван', 'Музыка'
-    good_records = [
+GOOD_RECORD = [
     'Красавчег',
     'Молодец',
     'Один из лучших ответов',
@@ -50,17 +30,42 @@ def create_commendation(name, lesson): #'Фролов Иван', 'Музыка'
     'Прекрасное начало!',
     'Так держать!',
     'Ты на верном пути!']
+
+
+def change_mark():
+    kids = Schoolkid.objects.all()
+    kid_ivan = kids.get(full_name__contains='Фролов Иван')
+    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan)
+    print(ivan_marks)
+    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan, points__in=[2, 3])
+    ivan_marks.filter().values_list("id")
+    for bad_marks in ivan_marks.filter().values_list("id"):
+        Mark.objects.filter(id=bad_marks[0]).update(points=5)
+    print("Плохие оценки исправлены")
+
+
+def remove_chastisements():
+    kids = Schoolkid.objects.all()
+    kid = kids.get(full_name__contains='Фролов Иван')
+    Chastisement.objects.filter(schoolkid=kid).delete()
+    print("Все замечания удалены")
+
+
+def create_commendation(name, lesson):
+    """ 'Фролов Иван', 'Музыка' """
     try:
         kids = Schoolkid.objects.all()
         kid = kids.get(full_name__contains=name)
-        lesson_kid = Lesson.objects.filter(year_of_study='6', group_letter = 'А', subject__title__contains=lesson).order_by('-date').first()
+        lesson_kid = Lesson.objects.filter(year_of_study='6', group_letter='А', subject__title__contains=lesson)
+        lesson_kid.order_by('-date').first()
         teachers = Teacher.objects.all()
         teacher = teachers.get(full_name__contains=lesson_kid.teacher)
-        predmeti = Subject.objects.all()
-        predmet = predmeti.get(title=lesson, year_of_study=6)
-        Commendation.objects.create(text=random.choice(good_records), created=lesson_kid.date, subject=predmet, teacher=teacher, schoolkid=kid)
+        lessons = Subject.objects.all()
+        lesson6a = lessons.get(title=lesson, year_of_study=6)
+        Commendation.objects.create(text=random.choice(GOOD_RECORD), created=lesson_kid.date,
+                                    subject=lesson6a, teacher=teacher, schoolkid=kid)
         print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
-    except MultipleObjectsReturned :
+    except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
     except ObjectDoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
