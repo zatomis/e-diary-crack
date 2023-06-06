@@ -9,6 +9,25 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 import random
 
+def change_mark():
+    kids = Schoolkid.objects.all()
+    kid_ivan = kids.get(full_name__contains='Фролов Иван')
+    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan)
+    print(ivan_marks)
+    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan, points__in=[2, 3])
+    ivan_marks.filter().values_list("id")
+    for bad_marks in ivan_marks.filter().values_list("id"):
+        Mark.objects.filter(id=bad_marks[0]).update(points=5)
+    print("Плохие оценки исправлены")
+
+
+def remove_chastisements():
+    kids = Schoolkid.objects.all()
+    kid = kids.get(full_name__contains='Фролов Иван')
+    Chastisement.objects.filter(schoolkid=kid).delete()
+    print("Все замечания удалены")
+
+
 def create_commendation(name, lesson): #'Фролов Иван', 'Музыка'
     good_records = [
     'Красавчег',
