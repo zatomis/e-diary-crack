@@ -5,11 +5,11 @@ from datacenter.models import Lesson
 from datacenter.models import Teacher
 from datacenter.models import Subject
 from datacenter.models import Commendation
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist as DoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 import random
 
-GOOD_RECORD = [
+GOOD_RECORDS = [
     'Красавчег',
     'Молодец',
     'Один из лучших ответов',
@@ -32,23 +32,33 @@ GOOD_RECORD = [
     'Ты на верном пути!']
 
 
-def change_mark():
-    kids = Schoolkid.objects.all()
-    kid_ivan = kids.get(full_name__contains='Фролов Иван')
-    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan)
-    print(ivan_marks)
-    ivan_marks = Mark.objects.filter(schoolkid=kid_ivan, points__in=[2, 3])
-    ivan_marks.filter().values_list("id")
-    for bad_marks in ivan_marks.filter().values_list("id"):
-        Mark.objects.filter(id=bad_marks[0]).update(points=5)
-    print("Плохие оценки исправлены")
+def change_mark(name):
+    try:
+        kids = Schoolkid.objects.all()
+        kid = kids.get(full_name__contains=name)
+        kid_marks = Mark.objects.filter(schoolkid=kid)
+        kid_marks = Mark.objects.filter(schoolkid=kid, points__in=[2, 3])
+        kid_marks.filter().values_list("id")
+        for bad_marks in kid_marks.filter().values_list("id"):
+            Mark.objects.filter(id=bad_marks[0]).update(points=5)
+        print("Плохие оценки исправлены")
+    except MultipleObjectsReturned:
+        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
+    except DoesNotExist:
+        print(f"Ученика с таким именем {name} не существует")
 
 
-def remove_chastisements():
-    kids = Schoolkid.objects.all()
-    kid = kids.get(full_name__contains='Фролов Иван')
-    Chastisement.objects.filter(schoolkid=kid).delete()
-    print("Все замечания удалены")
+
+def remove_chastisements(name):
+    try:
+        kids = Schoolkid.objects.all()
+        kid = kids.get(full_name__contains=name)
+        Chastisement.objects.filter(schoolkid=kid).delete()
+        print(f"Все замечания для ученика {name} удалены")
+    except MultipleObjectsReturned:
+        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
+    except DoesNotExist:
+        print(f"Ученика с таким именем {name} не существует")
 
 
 def create_commendation(name, lesson):
@@ -56,16 +66,16 @@ def create_commendation(name, lesson):
     try:
         kids = Schoolkid.objects.all()
         kid = kids.get(full_name__contains=name)
-        lesson_kid = Lesson.objects.filter(year_of_study='6', group_letter='А', subject__title__contains=lesson)
+        lesson_kid = Lesson.objects.filter(year_of_study=kid.year_of_study, group_letter=kid.year_of_study, subject__title__contains=lesson)
         lesson_kid.order_by('-date').first()
         teachers = Teacher.objects.all()
         teacher = teachers.get(full_name__contains=lesson_kid.teacher)
         lessons = Subject.objects.all()
-        lesson6a = lessons.get(title=lesson, year_of_study=6)
-        Commendation.objects.create(text=random.choice(GOOD_RECORD), created=lesson_kid.date,
-                                    subject=lesson6a, teacher=teacher, schoolkid=kid)
+        lesson_kid = lessons.get(title=lesson, year_of_study=kid.year_of_study)
+        Commendation.objects.create(text=random.choice(GOOD_RECORDS), created=lesson_kid.date,
+                                    subject=lesson_kid, teacher=teacher_id, schoolkid=kid)
         print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except ObjectDoesNotExist:
+    except DoesNotExist:
         print(f"Ученика с таким именем {name} не существует")

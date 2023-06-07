@@ -13,13 +13,13 @@
  ```
 crack.create_commendation('Фролов Иван', 'Музыка')
  ```
-- Удалить замечания - используйте remove_chastisements()
+- Удалить замечания - используйте remove_chastisements('Укажите ФИО')
  ```
-crack.remove_chastisements()
+crack.remove_chastisements('Укажите ФИО')
  ```
-- Исправить оценки 2 и 3 на 5 - используйте change_mark()
+- Исправить оценки 2 и 3 на 5 - используйте change_mark('Укажите ФИО')
  ```
-crack.change_mark()
+crack.change_mark('Укажите ФИО')
  ```
 
 
