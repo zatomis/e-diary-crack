@@ -38,9 +38,7 @@ def change_mark(name):
         kid = kids.get(full_name__contains=name)
         kid_marks = Mark.objects.filter(schoolkid=kid)
         kid_marks = Mark.objects.filter(schoolkid=kid, points__in=[2, 3])
-        kid_marks.filter().values_list("id")
-        for bad_marks in kid_marks.filter().values_list("id"):
-            Mark.objects.filter(id=bad_marks[0]).update(points=5)
+        kid_marks.select_related('id').update(points=5)
         print("Плохие оценки исправлены")
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
