@@ -5,7 +5,7 @@ from datacenter.models import Lesson
 from datacenter.models import Teacher
 from datacenter.models import Subject
 from datacenter.models import Commendation
-from django.core.exceptions import ObjectDoesNotExist as DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import MultipleObjectsReturned
 import random
 
@@ -44,7 +44,7 @@ def change_mark(name):
         print("Плохие оценки исправлены")
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except DoesNotExist:
+    except ObjectDoesNotExist as DoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
 
 
@@ -57,7 +57,7 @@ def remove_chastisements(name):
         print(f"Все замечания для ученика {name} удалены")
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except DoesNotExist:
+    except ObjectDoesNotExist as DoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
 
 
@@ -77,5 +77,6 @@ def create_commendation(name, lesson):
         print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except DoesNotExist:
+    except ObjectDoesNotExist as DoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
+
