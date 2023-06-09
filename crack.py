@@ -32,49 +32,38 @@ GOOD_RECORDS = [
     'Ты на верном пути!']
 
 
-def change_mark(name):
+def get_kid(name):
     try:
         kids = Schoolkid.objects.all()
-        kid = kids.get(full_name__contains=name)
-        kid_marks = Mark.objects.filter(schoolkid=kid)
+        return kids.get(full_name__contains=name)
+    except MultipleObjectsReturned:
+        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
+        return False
+    except ObjectDoesNotExist as DoesNotExist:
+        print(f"Ученика с таким именем {name} не существует")
+        return False
+
+
+def change_mark(name):
+    kid = get_kid(name)
+    if (kid):
         kid_marks = Mark.objects.filter(schoolkid=kid, points__in=[2, 3])
         kid_marks.select_related('id').update(points=5)
         print("Плохие оценки исправлены")
-    except MultipleObjectsReturned:
-        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except ObjectDoesNotExist as DoesNotExist:
-        print(f"Ученика с таким именем {name} не существует")
-
 
 
 def remove_chastisements(name):
-    try:
-        kids = Schoolkid.objects.all()
-        kid = kids.get(full_name__contains=name)
+    kid = get_kid(name)
+    if (kid):
         Chastisement.objects.filter(schoolkid=kid).delete()
         print(f"Все замечания для ученика {name} удалены")
-    except MultipleObjectsReturned:
-        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except ObjectDoesNotExist as DoesNotExist:
-        print(f"Ученика с таким именем {name} не существует")
 
 
 def create_commendation(name, lesson):
-    """ 'Фролов Иван', 'Музыка' """
-    try:
-        kids = Schoolkid.objects.all()
-        kid = kids.get(full_name__contains=name)
-        lesson_kid = Lesson.objects.filter(year_of_study=kid.year_of_study, group_letter=kid.year_of_study, subject__title__contains=lesson)
-        lesson_kid.order_by('-date').first()
-        teachers = Teacher.objects.all()
-        teacher = teachers.get(full_name__contains=lesson_kid.teacher)
-        lessons = Subject.objects.all()
-        lesson_kid = lessons.get(title=lesson, year_of_study=kid.year_of_study)
+    """ crack.create_commendation('Фролов Иван', 'Музыка') """
+    kid = get_kid(name)
+    if (kid):
+        lesson_kid = Lesson.objects.filter(year_of_study=kid.year_of_study, group_letter=kid.group_letter, subject__title__contains=lesson).order_by('-date').first()
         Commendation.objects.create(text=random.choice(GOOD_RECORDS), created=lesson_kid.date,
-                                    subject=lesson_kid, teacher=teacher_id, schoolkid=kid)
+                                    subject=lesson_kid.subject, teacher=lesson_kid.teacher, schoolkid=kid)
         print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
-    except MultipleObjectsReturned:
-        print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-    except ObjectDoesNotExist as DoesNotExist:
-        print(f"Ученика с таким именем {name} не существует")
-
