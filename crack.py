@@ -35,7 +35,7 @@ GOOD_RECORDS = [
 def get_student(name):
     try:
         return Schoolkid.objects.get(full_name__contains=name)
-    except MultipleObjectsReturned:
+    except Schoolkid.MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
         return None
     except Schoolkid.DoesNotExist:
