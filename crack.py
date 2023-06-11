@@ -34,14 +34,13 @@ GOOD_RECORDS = [
 
 def get_student(name):
     try:
-        students = Schoolkid.objects.all()
-        return students.get(full_name__contains=name)
+        return Schoolkid.objects.get(full_name__contains=name)
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
-        return False
-    except ObjectDoesNotExist:
+        return None
+    except Schoolkid.DoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
-        return False
+        return None
 
 
 def change_mark(name):
