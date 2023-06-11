@@ -32,38 +32,40 @@ GOOD_RECORDS = [
     'Ты на верном пути!']
 
 
-def get_kid(name):
+def get_student(name):
     try:
-        kids = Schoolkid.objects.all()
-        return kids.get(full_name__contains=name)
+        students = Schoolkid.objects.all()
+        return students.get(full_name__contains=name)
     except MultipleObjectsReturned:
         print(f"Скрипт нашел сразу несколько таких учеников {name}. Исправления не возможны")
         return False
-    except ObjectDoesNotExist as DoesNotExist:
+    except ObjectDoesNotExist:
         print(f"Ученика с таким именем {name} не существует")
         return False
 
 
 def change_mark(name):
-    kid = get_kid(name)
-    if (kid):
-        kid_marks = Mark.objects.filter(schoolkid=kid, points__in=[2, 3])
-        kid_marks.select_related('id').update(points=5)
+    student = get_student(name)
+    if (student):
+        Mark.objects.filter(schoolkid=student, points__in=[2, 3]).update(points=5)
         print("Плохие оценки исправлены")
 
 
 def remove_chastisements(name):
-    kid = get_kid(name)
-    if (kid):
-        Chastisement.objects.filter(schoolkid=kid).delete()
+    student = get_student(name)
+    if (student):
+        Chastisement.objects.filter(schoolkid=student).delete()
         print(f"Все замечания для ученика {name} удалены")
 
 
 def create_commendation(name, lesson):
     """ crack.create_commendation('Фролов Иван', 'Музыка') """
-    kid = get_kid(name)
-    if (kid):
-        lesson_kid = Lesson.objects.filter(year_of_study=kid.year_of_study, group_letter=kid.group_letter, subject__title__contains=lesson).order_by('-date').first()
-        Commendation.objects.create(text=random.choice(GOOD_RECORDS), created=lesson_kid.date,
-                                    subject=lesson_kid.subject, teacher=lesson_kid.teacher, schoolkid=kid)
-        print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
+    student = get_student(name)
+    if (student):
+        student_lesson = Lesson.objects.filter(year_of_study=student.year_of_study, group_letter=student.group_letter, subject__title__contains=lesson).order_by('-date').first()
+        if(student_lesson):
+            Commendation.objects.create(text=random.choice(GOOD_RECORDS), created=student_lesson.date,
+                                        subject=student_lesson.subject, teacher=student_lesson.teacher, schoolkid=student)
+            print(f"Успешно добавил запись для {name}, хороший отзыв проставлен в предмете {lesson}")
+        else:
+            print(f"Нет такого урока {lesson}!")
